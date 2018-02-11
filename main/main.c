@@ -5,12 +5,14 @@
 #include "i2c_driver.h"
 #include "nvs_flash.h"
 #include "AppConfig.h"
+#include "ccs811_application.h"
 
 #define STACK_SIZE_2048 2048
 
 /* Structure that will hold the TCB of the task being created. */
 StaticTask_t xI2CWriteTaskBuffer;
 StaticTask_t xI2CReadTaskBuffer;
+StaticTask_t xCCS811TaskBuffer;
 
 /* Buffer that the task being created will use as its stack.  Note this is
     an array of StackType_t variables.  The size of StackType_t is dependent on
@@ -18,6 +20,7 @@ StaticTask_t xI2CReadTaskBuffer;
 
 StackType_t xStack_I2C_Write[ STACK_SIZE_2048 ];
 StackType_t xStack_I2C_Read[ STACK_SIZE_2048 ];
+StackType_t xStack_CCS811Task[ STACK_SIZE_2048 ];
 
 void app_main(void)
 {
@@ -52,4 +55,14 @@ void app_main(void)
                                   &xI2CReadTaskBuffer, /* Variable to hold the task's data structure. */
                                   0                    /*  0 for PRO_CPU, 1 for APP_CPU, or tskNO_AFFINITY which allows the task to run on both */
                                   );
+
+    xTaskCreateStaticPinnedToCore(vCCS811Task,        /* Function that implements the task. */
+                                "vCCS811Task",      /* Text name for the task. */
+                                STACK_SIZE_2048,     /* Number of indexes in the xStack array. */
+                                NULL,                /* Parameter passed into the task. */
+                                osPriorityNormal,    /* Priority at which the task is created. */
+                                xStack_CCS811Task,  /* Array to use as the task's stack. */
+                                &xCCS811TaskBuffer, /* Variable to hold the task's data structure. */
+                                0                    /*  0 for PRO_CPU, 1 for APP_CPU, or tskNO_AFFINITY which allows the task to run on both */
+                                );
 }
